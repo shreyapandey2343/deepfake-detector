@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EagleEye | Deepfake Detection</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="logo-area">
+            <img src="/static/eagle-eye-logo.png" class="logo-img">
+            <span class="logo-text">EagleEye</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="back-home">← Home</a>
+        </div>
+    </div>
+
+    <!-- PAGE CONTAINER -->
+    <div class="page">
+        <div class="app-container">
+
+            <!-- HEADER -->
+            <div class="card-header">
+                <img src="/static/eagle-eye-logo.png" class="logo-center">
+                <h2>Deepfake Detection</h2>
+                <p>Secure AI-powered image analysis</p>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div id="loginBox" class="auth-box">
+                <input type="email" id="email" placeholder="Email Address">
+                <input type="password" id="password" placeholder="Password">
+                <button onclick="login()">Login</button>
+                <p class="switch" onclick="showSignup()">Create account</p>
+            </div>
+
+            <!-- SIGNUP FORM -->
+            <div id="signupBox" class="auth-box hidden">
+                <input type="email" id="signupEmail" placeholder="Email Address">
+                <input type="password" id="signupPassword" placeholder="Password">
+                <button onclick="signup()">Sign Up</button>
+                <p class="switch" onclick="showLogin()">Already have an account?</p>
+            </div>
+
+            <!-- ANALYSIS APP -->
+            <div id="appBox" class="hidden">
+                <label class="file-upload">
+                    <input type="file" id="fileInput" accept="image/*">
+                    <span id="fileText">📂 Choose Image</span>
+                </label>
+
+                <button id="analyzeBtn" onclick="analyze()">Analyze Image</button>
+
+                <!-- RESULT PANEL -->
+                <div id="result" class="hidden">
+                    <!-- LEFT SIDE - Image Preview -->
+                    <div class="result-left">
+                        <div id="preview"></div>
+                        <h3 id="label"></h3>
+                        <p id="confidence"></p>
+                    </div>
+
+                    <!-- RIGHT SIDE - Flashcards -->
+                    <div class="result-right">
+                        <div class="flashcard-grid">
+                            <!-- AI Observation Cards -->
+                            <div class="flashcard" id="obsCard1">
+                                <div class="flashcard-inner">
+                                    <div class="flashcard-front">🔍 Observation 1</div>
+                                    <div class="flashcard-back obs-back"></div>
+                                </div>
+                            </div>
+                            <div class="flashcard" id="obsCard2">
+                                <div class="flashcard-inner">
+                                    <div class="flashcard-front">🔍 Observation 2</div>
+                                    <div class="flashcard-back obs-back"></div>
+                                </div>
+                            </div>
+                            <div class="flashcard" id="obsCard3">
+                                <div class="flashcard-inner">
+                                    <div class="flashcard-front">🔍 Observation 3</div>
+                                    <div class="flashcard-back obs-back"></div>
+                                </div>
+                            </div>
+                            <div class="flashcard" id="obsCard4">
+                                <div class="flashcard-inner">
+                                    <div class="flashcard-front">🔍 Observation 4</div>
+                                    <div class="flashcard-back obs-back"></div>
+                                </div>
+                            </div>
+                            <!-- Risk Warning Cards (Only for Fake/Uncertain) -->
+                            <div class="flashcard risk-card" id="riskCard1" style="display:none;">
+                                <div class="flashcard-inner">
+                                    <div class="flashcard-front">⚠️ Risk 1</div>
+                                    <div class="flashcard-back risk-back"></div>
+                                </div>
+                            </div>
+                            <div class="flashcard risk-card" id="riskCard2" style="display:none;">
+                                <div class="flashcard-inner">
+                                    <div class="flashcard-front">⚠️ Risk 2</div>
+                                    <div class="flashcard-back risk-back"></div>
+                                </div>
+                            </div>
+                            <div class="flashcard risk-card" id="riskCard3" style="display:none;">
+                                <div class="flashcard-inner">
+                                    <div class="flashcard-front">⚠️ Risk 3</div>
+                                    <div class="flashcard-back risk-back"></div>
+                                </div>
+                            </div>
+                            <div class="flashcard risk-card" id="riskCard4" style="display:none;">
+                                <div class="flashcard-inner">
+                                    <div class="flashcard-front">⚠️ Risk 4</div>
+                                    <div class="flashcard-back risk-back"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
