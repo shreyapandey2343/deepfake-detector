@@ -16,6 +16,14 @@ import os
 from tensorflow.keras.applications.efficientnet import preprocess_input
 
 
+# ===== TensorFlow Memory Optimization =====
+# Reduces TensorFlow memory usage on small servers like Render
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+tf.config.threading.set_inter_op_parallelism_threads(1)
+tf.config.threading.set_intra_op_parallelism_threads(1)
+
+
 # ===== App Initialization =====
 
 app = FastAPI(title="EagleEye Deepfake Detector")
@@ -134,7 +142,6 @@ face_cascade = cv2.CascadeClassifier(
 def detect_face(image: Image.Image):
 
     img = np.array(image.convert("RGB"))
-
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
     faces = face_cascade.detectMultiScale(
@@ -150,24 +157,32 @@ def detect_face(image: Image.Image):
 def is_too_dark(image: Image.Image):
 
     gray = np.array(image.convert("L"))
-
     return gray.mean() < 40
 
 
 def prepare_image(image: Image.Image):
 
     image = image.convert("RGB").resize((IMG_SIZE, IMG_SIZE))
-
     arr = np.expand_dims(np.array(image), axis=0)
 
     return preprocess_input(arr)
 
 
-# ===== Load Model =====
+# ===== Model Loading (Lazy Load) =====
 
 MODEL_PATH = os.path.join(BASE_DIR, "models", "eagleeye_phase1.h5")
 
-model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+model = None
+
+
+def get_model():
+    global model
+
+    if model is None:
+        print("Loading model...")
+        model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+
+    return model
 
 
 # ===== Prediction Route =====
@@ -179,39 +194,45 @@ async def predict(file: UploadFile = File(...)):
 
     try:
         image = Image.open(io.BytesIO(contents))
-
     except:
         return {"error": "Invalid input image"}
 
-    faces = detect_face(image)
+    try:
 
-    # Reject images with no face OR extremely dark
-    if len(faces) == 0 or is_too_dark(image):
-        return {"error": "Invalid input image"}
+        faces = detect_face(image)
 
-    # Crop first detected face
-    x, y, w, h = faces[0]
+        # Reject images with no face OR extremely dark
+        if len(faces) == 0 or is_too_dark(image):
+            return {"error": "Invalid input image"}
 
-    img_np = np.array(image.convert("RGB"))
+        # Crop first detected face
+        x, y, w, h = faces[0]
 
-    face = img_np[y:y+h, x:x+w]
+        img_np = np.array(image.convert("RGB"))
+        face = img_np[y:y+h, x:x+w]
 
-    face_img = Image.fromarray(face)
+        face_img = Image.fromarray(face)
 
-    img = prepare_image(face_img)
+        img = prepare_image(face_img)
 
-    prob = float(model.predict(img)[0][0])
+        model = get_model()
 
-    if prob >= FAKE_THRESHOLD:
-        label = "Fake"
+        prob = float(model.predict(img)[0][0])
 
-    elif prob <= REAL_THRESHOLD:
-        label = "Real"
+        if prob >= FAKE_THRESHOLD:
+            label = "Fake"
 
-    else:
-        label = "Uncertain"
+        elif prob <= REAL_THRESHOLD:
+            label = "Real"
 
-    return {
-        "prediction": label,
-        "confidence": round(prob, 3)
-    }
+        else:
+            label = "Uncertain"
+
+        return {
+            "prediction": label,
+            "confidence": round(prob, 3)
+        }
+
+    except Exception as e:
+        print("Prediction error:", e)
+        return {"error": "Prediction failed"}
